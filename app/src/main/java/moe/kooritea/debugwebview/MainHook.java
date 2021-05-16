@@ -44,7 +44,9 @@ public class MainHook implements IXposedHookLoadPackage {
     private HashSet<String> classNameSet = new HashSet<>();
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if(lpparam.isFirstApplication){
-            this.hookSystemWebView(lpparam);
+            if(hookCheck(lpparam.packageName)){
+                this.hookSystemWebView(lpparam);
+            }
         }
     }
 
@@ -58,28 +60,8 @@ public class MainHook implements IXposedHookLoadPackage {
                     final WebView webview = (WebView)param.thisObject;
                     WebSettings webSettings = webview.getSettings();
                     webSettings.setJavaScriptEnabled(true);
-                    webSettings.setDomStorageEnabled(true);
-                    webSettings.setDatabaseEnabled(true);
                     if(hookCheck(webSettings.getClass().getName())){
                         XposedBridge.hookMethod(findMethod(webSettings.getClass(),"setJavaScriptEnabled"),new XC_MethodHook() {
-                            @Override
-                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                                param.args[0] = true;
-                            }
-                        });
-                        XposedBridge.hookMethod(findMethod(webSettings.getClass(),"setDomStorageEnabled"),new XC_MethodHook() {
-                            @Override
-                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                                param.args[0] = true;
-                            }
-                        });
-                        XposedBridge.hookMethod(findMethod(webSettings.getClass(),"setDatabaseEnabled"),new XC_MethodHook() {
-                            @Override
-                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                                param.args[0] = true;
-                            }
-                        });
-                        XposedBridge.hookMethod(findMethod(webSettings.getClass(),"setAllowContentAccess"),new XC_MethodHook() {
                             @Override
                             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                                 param.args[0] = true;
@@ -98,7 +80,7 @@ public class MainHook implements IXposedHookLoadPackage {
             XposedBridge.hookMethod(findMethod(webViewClazz,"setWebViewClient"),new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    if(hookCheck(param.args[0].getClass().getName())){
+                    if(param.args[0] != null && hookCheck(param.args[0].getClass().getName())){
                         XposedBridge.hookMethod(findMethod(param.args[0].getClass(),"onPageFinished"),new XC_MethodHook() {
                             @Override
                             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -134,7 +116,7 @@ public class MainHook implements IXposedHookLoadPackage {
      * @return
      */
     private boolean hookCheck(String className){
-        if(classNameSet.equals(className)){
+        if(classNameSet.contains(className)){
             return false;
         }else{
             classNameSet.add(className);
