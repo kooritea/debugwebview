@@ -1,6 +1,10 @@
 # [xposed]debugwebview
 强制打开webview的debug模式和注入vConsole
 
+
+## 换坑
+建议用 https://github.com/WankkoRee/EnableWebViewDebugging
+
 ## 用法
 建议使用Lsposed,因为本模块没有界面，安装后直接使用Lsposed的作用域选择需要注入的应用，普通的xposed框架将会全部应用都注入
 
